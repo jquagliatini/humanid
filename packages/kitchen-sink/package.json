@@ -1,0 +1,13 @@
+{
+  "name": "kitchen-sink",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "precompile": "rm -rf ./dist",
+    "compile": "tsc -p ."
+  },
+  "dependencies": {
+    "humanid": "workspace:*"
+  }
+}

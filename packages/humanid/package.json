@@ -1,0 +1,28 @@
+{
+  "name": "humanid",
+  "version": "0.0.1",
+  "files": [
+    "dist",
+    "!dist/.tsbuildinfo"
+  ],
+  "type": "module",
+  "main": "dist/humanid.js",
+  "types": "dist/humanid.d.ts",
+  "scripts": {
+    "format": "oxfmt --write",
+    "format:check": "oxfmt --deny-warnings",
+    "lint": "oxlint --deny-warnings --fix",
+    "lint:check": "oxlint --deny-warnings",
+    "predev": "rm -rf dist",
+    "dev": "tsc -p . --watch",
+    "prebuild": "rm -rf dist",
+    "build": "tsc -p ./tsconfig.build.json",
+    "clean": "rm -rf dist",
+    "prepack": "pnpm build"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.0",
+    "oxfmt": "0.67.0",
+    "oxlint": "1.82.0"
+  }
+}
