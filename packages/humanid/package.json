@@ -1,6 +1,7 @@
 {
-  "name": "humanid",
+  "name": "@jqgl/humanid",
   "version": "0.0.1",
+  "license": "MIT",
   "files": [
     "dist",
     "!dist/.tsbuildinfo"
