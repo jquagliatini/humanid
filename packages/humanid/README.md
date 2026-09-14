@@ -49,9 +49,13 @@ const ids = defineIds((h) => ({
 
 ## How to use
 
+```
+pnpm add @jqgl/humanid
+```
+
 ```ts
 // = ids.ts =
-import { defineIds } from "humanid";
+import { defineIds } from "@jqgl/humanid";
 
 export const ids = defineIds((h) => ({
   // Each entry will be unique by construction,
@@ -61,7 +65,7 @@ export const ids = defineIds((h) => ({
   file: h.uuid(),
 }));
 
-declare module "humanid" {
+declare module "@jqgl/humanid" {
   interface Registry {
     /**
      * The declaration merging typing
@@ -73,7 +77,7 @@ declare module "humanid" {
 }
 
 // = user.repository.ts =
-import type { Id } from "humanid";
+import type { Id } from "@jqgl/humanid";
 
 import { db } from "@/db.js";
 
@@ -153,6 +157,22 @@ const userId = ids.user();
 //    ^ usr_10001
 ```
 
+### Id strategies extensions
+
+In addition to the inlined custom format, it's possible to extend `defineIds` with your own functions:
+
+```ts
+import { defineIds as humanIds } from "@jqgl/humanid";
+import cuid from "cuid";
+
+const defineIds = humanIds.extend({ cuid: () => cuid() });
+
+// cuid() is now available
+export const ids = defineIds((h) => ({
+  user: h.cuid(),
+}));
+```
+
 ### Branding conventions
 
 We follow a convention to build each Id Branding, with some assumptions:
@@ -177,3 +197,19 @@ const ids = defineIds((h) => ({ user: h.uuid() }));
 const ids = defineIds((h) => ({ users: { subscription: h.uuid() } }));
 //    ^ Id<'Users/SubscriptionId'>
 ```
+
+### Things to improve
+
+#### Memory usage
+
+The current design is optimized for stripe ids. It requires each ID definition to
+carry their parameters.
+
+At scale, the store could be large, which could be improved.
+
+#### Id formats are not tree-shakable
+
+At the moment, all IDs formats are kept in the bundle. We should provide a way to optimize this
+if necessary, e.g. users might want to use `uuid`s only.
+
+The easiest way to provide this would be to improve the DX on the [createDefineIds](./src/internal/builder.ts#62) function.

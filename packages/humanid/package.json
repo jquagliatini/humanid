@@ -1,6 +1,7 @@
 {
   "name": "@jqgl/humanid",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "description": "centralized, type-safe entity identifiers",
   "license": "MIT",
   "files": [
     "dist",

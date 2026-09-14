@@ -1,4 +1,4 @@
-import type { BuildPath, HumanId, IdDictionary } from "./internal/types.js";
+import type { HumanId, IdBrands } from "./internal/types.js";
 
 /**
  * expose your own ids with
@@ -15,8 +15,8 @@ import type { BuildPath, HumanId, IdDictionary } from "./internal/types.js";
  */
 export interface Registry {}
 
-type KnownId<R = Registry> = R extends { ids: IdDictionary<infer I> } ? BuildPath<I> : string;
+type KnownId<R = Registry> = R extends { ids: infer I } ? IdBrands<I> : string;
 
 export type Id<T extends KnownId> = HumanId<T>;
 
-export { defineIds } from "./internal/dictionary.js";
+export { defineIds } from "./internal/define-ids.js";
