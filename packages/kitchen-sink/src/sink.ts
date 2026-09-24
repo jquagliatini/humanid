@@ -1,7 +1,8 @@
-import { type Id } from 'humanid';
-import { ids } from './ids.js';
+import { type Id } from "humanid";
 
-type User = { id: Id<"UserId"> }
+import { ids } from "./ids.js";
+
+type User = { id: Id<"User"> };
 
 function describeUser(user: User) {
   console.log(user);
@@ -10,7 +11,7 @@ function describeUser(user: User) {
 describeUser({ id: ids.user() });
 
 // @ts-expect-error
-describeUser({ id: ids.email.attachment() })
+describeUser({ id: ids.email.attachment() });
 
 // @ts-expect-error
 export type Failing = Id<"Unknown">;

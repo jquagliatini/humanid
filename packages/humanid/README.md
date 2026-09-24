@@ -1,6 +1,6 @@
 # HUMANID
 
-the central source of truth for your identifiers
+centralized, type-safe id generators
 
 ## Why?
 
@@ -15,7 +15,7 @@ With branded ids:
 function unsubscribe(userId: string, subscriptionId: string): Promise<void>;
 
 // after 🥳
-function unsubscribe(userId: Id<"UserId">, subscriptionId: Id<"SubscriptionId">): Promise<void>;
+function unsubscribe(userId: Id<"UserId">, subscriptionId: Id<"Subscription">): Promise<void>;
 ```
 
 - Collections can finally express your intent
@@ -25,9 +25,7 @@ function unsubscribe(userId: Id<"UserId">, subscriptionId: Id<"SubscriptionId">)
 function findUsersSubscriptions(userIds: Set<string>): Map<string, { id: string }[]>;
 
 // after 🥳
-function findUsersSubscriptions(
-  userIds: Set<Id<"UserId">>,
-): Map<Id<"UserId">, Id<"SubscriptionId">[]>;
+function findUsersSubscriptions(userIds: Set<Id<"User">>): Map<Id<"User">, Id<"Subscription">[]>;
 ```
 
 With a central id registry:
@@ -39,7 +37,7 @@ With a central id registry:
 const ids = defineIds((h) => ({ user: h.uuid(), user: h.uuid() }));
 
 // Brands are built by convention
-// `UserId` + `Emails/UserId` + `Auth/UserId`
+// `User` + `Emails/User` + `Auth/User`
 const ids = defineIds((h) => ({
   user: h.uuid(),
   emails: { user: h.uuid() },
@@ -59,7 +57,7 @@ import { defineIds } from "@jqgl/humanid";
 
 export const ids = defineIds((h) => ({
   // Each entry will be unique by construction,
-  // and have a type alias: `UserId`, `EmailId`, `FileId`
+  // and have a type alias: `User`, `Email`, `File`
   user: h.uuid(),
   email: h.uuid(),
   file: h.uuid(),
@@ -81,10 +79,10 @@ import type { Id } from "@jqgl/humanid";
 
 import { db } from "@/db.js";
 
-type User = { id: Id<"UserId">; name: string };
+type User = { id: Id<"User">; name: string };
 
 // the Id type will only allow the registered Id
-export async function findById(id: Id<"UserId">): Promise<User> {
+export async function findById(id: Id<"User">): Promise<User> {
   const user = await db.query.findFirst({
     where: { id }, // id is still a string
     columns: { id: true, name: true },
@@ -162,54 +160,88 @@ const userId = ids.user();
 In addition to the inlined custom format, it's possible to extend `defineIds` with your own functions:
 
 ```ts
-import { defineIds as humanIds } from "@jqgl/humanid";
+import { defineIds as base } from "@jqgl/humanid";
 import cuid from "cuid";
 
-const defineIds = humanIds.extend({ cuid: () => cuid() });
+const extended = base.extend({ cuid: () => cuid() });
 
-// cuid() is now available
-export const ids = defineIds((h) => ({
+export const ids = extended((h) => ({
   user: h.cuid(),
+  //      ^ cuid() is now available
 }));
 ```
 
-### Branding conventions
+### Single format
+
+If you want all your ids to follow the same format (e.g. uuids), you can use the special format method:
+
+```ts
+import { defineIds } from "@jqgl/humanid";
+
+export const ids = defineIds.uuid((__) => ({ user: __, email: __ }));
+```
+
+it also works with extensions
+
+```ts
+import { defineIds as base } from "@jqgl/humanid";
+import cuid from "cuid";
+
+const extended = base.extend({ cuid: () => cuid() });
+
+export const ids = extended.cuid((__) => ({ user: __, email: __ }));
+```
+
+## Branding conventions
 
 We follow a convention to build each Id Branding, with some assumptions:
 
-1. Key should not use the `id` suffix, we add it automatically. If your key uses `...Id` the brand will repeat it `...IdId`.
-
-```ts
-const ids = defineIds((h) => ({ userId: h.uuid() }));
-//    ^ Ids<'UserIdId'>
-```
-
-2. Keys should be valid JS class names. Each generated Brand will look like a class name by design.
+1. Keys should be valid JS class names. Each generated Brand will look like a class name by design.
 
 ```ts
 const ids = defineIds((h) => ({ user: h.uuid() }));
-//    ^ Id<'UserId'> and not Id<'user'> or Id<'userId'>
+//    ^ Id<'User'>
 ```
 
-3. Namespaces are separated by `/`
+2. Namespaces are separated by `/`
 
 ```ts
 const ids = defineIds((h) => ({ users: { subscription: h.uuid() } }));
-//    ^ Id<'Users/SubscriptionId'>
+//    ^ Id<'Users/Subscription'>
 ```
 
-### Things to improve
+## Customizations
 
-#### Memory usage
+You can build your own ID formats store, by using the `makeStore` method:
 
-The current design is optimized for stripe ids. It requires each ID definition to
+```ts
+import { makeStore } from "@jqgl/humanid";
+
+const defineIds = makeStore({ uuid: () => crypto.randomUUID() });
+export const ids = defineIds((h) => ({ user: h.uuid() }));
+//                 no other format available ⤴
+```
+
+If you want to reuse some of the existing ID formats, they are exposed under the `/formats` module:
+
+```ts
+import { makeStore } from "@jqgl/humanid";
+import { uuid } from "@jqgl/humanid/formats";
+
+const defineIds = makeStore({ uuid });
+export const ids = defineIds((h) => ({ user: h.uuid() }));
+```
+
+## Things to improve
+
+### Memory usage
+
+The current design is optimized for stripe ids (prefixed format). It requires each ID definition to
 carry their parameters.
 
-At scale, the store could be large, which could be improved.
+We should measure the memory consumption of large stores.
 
-#### Id formats are not tree-shakable
+### Id formats are not tree-shakable by default
 
-At the moment, all IDs formats are kept in the bundle. We should provide a way to optimize this
-if necessary, e.g. users might want to use `uuid`s only.
-
-The easiest way to provide this would be to improve the DX on the [createDefineIds](./src/internal/builder.ts#62) function.
+All IDs formats are kept in the bundle _by default_.
+We provide a way to optimize this if necessary [see Customizations](#customizations).

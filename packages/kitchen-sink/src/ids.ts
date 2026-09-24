@@ -1,6 +1,6 @@
-import { defineIds } from 'humanid';
+import { defineIds } from "humanid";
 
-export const ids = defineIds(h => ({
+export const ids = defineIds((h) => ({
   user: h.uuid(),
   email: { attachment: h.uuid() },
 }));

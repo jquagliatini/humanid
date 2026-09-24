@@ -1,0 +1,14 @@
+{
+  "js/ts.experimental.useTsgo": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "oxc.oxc-vscode",
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
+  "[typescript][json][jsonc][yaml]": {
+    "editor.codeActionsOnSave": {
+      "source.format.oxc": "always",
+      "source.fixAll.oxc": "always"
+    }
+  }
+}

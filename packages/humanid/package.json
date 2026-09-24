@@ -1,6 +1,6 @@
 {
   "name": "@jqgl/humanid",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "centralized, type-safe entity identifiers",
   "license": "MIT",
   "files": [
@@ -8,8 +8,16 @@
     "!dist/.tsbuildinfo"
   ],
   "type": "module",
-  "main": "dist/humanid.js",
-  "types": "dist/humanid.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/humanid.js",
+      "types": "./dist/humanid.d.ts"
+    },
+    "./formats": {
+      "import": "./dist/formats.js",
+      "types": "./dist/formats.d.ts"
+    }
+  },
   "scripts": {
     "format": "oxfmt --write",
     "format:check": "oxfmt --deny-warnings",
